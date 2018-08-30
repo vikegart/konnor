@@ -1,8 +1,10 @@
 const apiai = require('apiai');
+let dialogFlowToken = 'empty';
+
 const NeuroSessionId = 'e4278f61-9437-4dff-a24b-aaaaaaaaaaaa';
-const CLIENTBRAIN = '7da6cec36fec4b03ae4c8db5dbdb52c9';
 const fallBackText = 'Связь с центром не установлена, сорре(';
-const app = apiai(CLIENTBRAIN);
+
+const app = apiai(dialogFlowToken);
 
 
 const askDialogFlow = (message) => {
@@ -27,5 +29,6 @@ const askDialogFlow = (message) => {
 }
 
 module.exports = {
-    askDialogFlow: askDialogFlow
+    askDialogFlow: askDialogFlow,
+    dialogFlowToken: dialogFlowToken,
 }

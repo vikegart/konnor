@@ -5,6 +5,7 @@ const parseString = require('xml2js').parseString;
 
 const folderName = './voices/';
 
+let yandexToken = '';
 
 const download = function (url, dest, cb) { //cb - callBack
     const file = fs.createWriteStream(folderName + dest);
@@ -32,7 +33,7 @@ const voiceMessageToText = (message) => {
                 reject(err);
             }
             yandex_speech.ASR({
-                developer_key: '10247188-b7de-4259-a22b-5acca675903e',
+                developer_key: yandexToken,
                 file: folderName + generatedFilename,
             }, function (err, httpResponse, xml) {
                 if (err) {
@@ -68,6 +69,7 @@ const hasVoiceAttached = (message) => {
 
 module.exports = {
     voiceMessageToText: voiceMessageToText,
-    hasVoiceAttached: hasVoiceAttached
+    hasVoiceAttached: hasVoiceAttached,
+    yandexToken: yandexToken
 }
 

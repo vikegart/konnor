@@ -1,18 +1,26 @@
 console.log('all ok');
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
-const askForWearherSaratov = require('./weatherSaratov');
-const dialogFlow = require('./dialogFlow');
-const users = require('./usersArr');
-const chatsForSend = require('./chatsID');
-const phrasesSticker = require('./fallbackSticker');
-const commands = require('./commands');
-const voiceToText = require('./voiceToText');
 
-const FULLTOKEN = '8352fb58fbf2738233baa9b8ddd20c06dd0a97cc3df6b88ad9d608b267d5c178357e26737df3a0859b0ae';
+const askForWearherSaratov = require('./modules/weatherSaratov');
+const dialogFlow = require('./modules/dialogFlow');
+const voiceToText = require('./modules/voiceToText');
+
+const users = require('./consts/usersArr');
+const chatsForSend = require('./consts/chatsID');
+const phrasesSticker = require('./consts/fallbackSticker');
+const commands = require('./consts/commands');
+
+//don't forget to add tokens in file and rename him
+const TOKENS = require('./secret_tokens');
+
+voiceToText.yandexToken = TOKENS.yandexSpeech;
+dialogFlow.dialogFlowToken = TOKENS.dialogFlow;
+askForWearherSaratov.apiKey = TOKENS.openWeather;
+
 
 const regMentionAll = /позови всех/i;
 const regGiftAll = /поздравь всех/i;
@@ -29,8 +37,8 @@ let isReadyForReply = true;
 let isReadyForWeather = true;
 
 const bot = new Bot({
-    token: FULLTOKEN,
-    group_id: 166484945
+    token: TOKENS.vkGroupFullRight,
+    group_id: TOKENS.groupId
 }).start()
 
 console.log('bot started'); //spam weather
@@ -84,7 +92,7 @@ bot.on('voice', message => {
 })
 
 bot.on('update', update => {
-    //check if audio message
+    //check if audio message as forward
     if (update.type == 'message_new') {
         const message = update.object;
         if (message.fwd_messages.length != 0) {

@@ -1,7 +1,7 @@
 //const request = require('request');
 const requestPromise = require('request-promise');
 
-let apiKey = '0f5dabc0c54c06265a901140441b5da2';
+let apiKey = '';
 let city = 'saratov';
 let saratovID = 498677;
 //let urlWeatherNow = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
@@ -49,5 +49,6 @@ DEBUG && askForWeather().then(
 )
 
 module.exports = {
-    askForWeather: askForWeather
+    askForWeather: askForWeather,
+    apiKey: apiKey,
 };
