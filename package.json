@@ -1,0 +1,25 @@
+{
+  "name": "bot_vk",
+  "version": "1.0.0",
+  "description": "konnor testing",
+  "main": "konnor.js",
+  "dependencies": {
+    "apiai": "^4.0.3",
+    "google": "^2.1.0",
+    "node-vk-bot": "1.0.2",
+    "node-vk-bot-api": "^1.2.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "util": "^0.11.0",
+    "xml2js": "^0.4.19",
+    "yandex-speech": "0.0.13"
+  },
+  "devDependencies": {
+    "lyric-get": "^1.0.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

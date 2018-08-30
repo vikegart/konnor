@@ -1,0 +1,249 @@
+console.log('all ok');
+
+const DEBUG_MODE = false;
+const lyric = require("lyric-get");
+const util = require('util');
+const { Bot } = require('node-vk-bot');
+const askForWearherSaratov = require('./weatherSaratov');
+const dialogFlow = require('./dialogFlow');
+const users = require('./usersArr');
+const chatsForSend = require('./chatsID');
+const phrasesSticker = require('./fallbackSticker');
+const commands = require('./commands');
+const voiceToText = require('./voiceToText');
+
+const FULLTOKEN = '8352fb58fbf2738233baa9b8ddd20c06dd0a97cc3df6b88ad9d608b267d5c178357e26737df3a0859b0ae';
+
+const regMentionAll = /позови всех/i;
+const regGiftAll = /поздравь всех/i;
+const regWho = /кто/i;
+const regStopCallingByName = /заткнись чувак/i;
+const regResumeCallingByName = /я скучал|я скучала/i;
+const regName = /коннор|connor|конор|андроид/i;
+const regWeather = /weather|погод[аыен]|дождик|дождь/i;
+const regSong = /текст песни/i;
+const regSongQuerySplitter = /\,|🎵|🎶|by/i;
+const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
+
+let isReadyForReply = true;
+let isReadyForWeather = true;
+
+const bot = new Bot({
+    token: FULLTOKEN,
+    group_id: 166484945
+}).start()
+
+console.log('bot started'); //spam weather
+!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather().then(
+    response => {
+        console.log('promise weather ' + response);
+        for (let i = 0; i < chatsForSend.length; i++) {
+            bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
+                function (e) {
+                    console.log('send weather to chat vk err ' + e);
+                }
+            );
+        }
+    },
+    error => console.log('promise weather error' + error)
+);
+
+bot.on('poll-error', error => {
+    console.error('error occurred on a working with the Long Poll server ' +
+        `(${util.inspect(error)})`)
+})
+
+bot.on('sticker', message => {
+    let rand = Math.floor(Math.random() * phrasesSticker.length);
+    bot.send(phrasesSticker[rand], message.peer_id).catch(
+        function (e) {
+            console.log('send weather to chat vk err ' + e);
+        }
+    );
+})
+
+bot.on('voice', message => {
+    console.log('get voice ' + util.inspect(message));
+    const options = { forward_messages: message.id.toString() };
+    voiceToText.voiceMessageToText(message).then(
+        response => {
+            bot.send(response, message.peer_id, options).catch(
+                function (e) {
+                    console.log('send voice to text to chat vk err ' + e);
+                }
+            );
+        },
+        error => {
+            bot.send(error, message.peer_id, options).catch(
+                function (e) {
+                    console.log('send voice to text to chat vk err ' + e);
+                }
+            );
+        }
+    )
+})
+
+bot.on('update', update => {
+    //check if audio message
+    if (update.type == 'message_new') {
+        const message = update.object;
+        if (message.fwd_messages.length != 0) {
+            for (let i = 0; i < message.fwd_messages.length; i++) {
+                let fwd_message = message.fwd_messages[i];
+                if (voiceToText.hasVoiceAttached(fwd_message)){
+                    voiceToText.voiceMessageToText(fwd_message).then(
+                        response => {
+                            bot.send(response, message.peer_id, { forward_messages: message.id.toString() }).catch(
+                                function (e) {
+                                    console.log('send voice to text to chat vk err ' + e);
+                                }
+                            );
+                        },
+                        error => {
+                            bot.send(error, message.peer_id, { forward_messages: message.id.toString() }).catch(
+                                function (e) {
+                                    console.log('send voice to text to chat vk err ' + e);
+                                }
+                            );
+                        }
+                    )
+                }
+            }
+        }
+
+    }
+
+})
+
+bot.get(/./, message => {
+    console.log('get message ' + util.inspect(message));
+    if (message.peer_id > 1000000000) { //message from conversation
+        if (!regName.test(message.text)) { //if no name calling - no answeer
+            return;
+        }
+    }
+
+    switch (true) {
+        case regWho.test(message.text) && isReadyForReply: {
+            let rand = Math.floor(Math.random() * users.length);
+            bot.send('хмм... кажется это ' + `(${users[rand]})`, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regMentionAll.test(message.text): {
+            bot.send('я призываю всех ' + `(${users.toString()})`, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regGiftAll.test(message.text) && isReadyForReply: {
+            bot.send('всех с праздником :D ' + `(${users.toString()})`, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regStopCallingByName.test(message.text) && isReadyForReply: {
+            isReadyForReply = false;
+            bot.send('окей, я пойду к Хенку с:', message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regResumeCallingByName.test(message.text): {
+            isReadyForReply = true;
+            bot.send('еее, здорова чуваки с: ', message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regWhatUCan.test(message.text): {
+            bot.send(commands, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regWeather.test(message.text) && isReadyForReply: {
+            askForWearherSaratov.askForWeather().then(
+                response => {
+                    console.log('promise weather ' + response);
+                    bot.send(response, message.peer_id).catch(
+                        function (e) {
+                            console.log('send vk weather err ' + e);
+                        }
+                    );
+                },
+                error => console.log('promise weather error' + error)
+            );
+            break;
+        }
+        case regSong.test(message.text): {
+            //get song name and artist from message
+
+            const lyricQuery = message.text.replace(regSong, '').replace(regName, '');
+            const lyricData = {
+                author: lyricQuery.split(regSongQuerySplitter, 2)[0].trim(),
+                songName: lyricQuery.split(regSongQuerySplitter, 2)[1].trim(),
+            };
+            lyric.get(lyricData.author, lyricData.songName, function (err, res) {
+                if (err) {
+                    console.log(err);
+                    //retry and swap parametrs
+                    lyric.get(lyricData.songName, lyricData.author, function (err, res) {
+                        if (err) {
+                            console.log(err);
+                            bot.send(`я не могу найти, может это ты в запросе ошибся? \n Ибо ответ из Киберлайф ${err}`, message.peer_id).catch(
+                                function (e) {
+                                    console.log(e);
+                                }
+                            );
+                        }
+                        else {
+                            bot.send(`пришлось поменять местами автора и название, но я справился \n \n ${res}`, message.peer_id).catch(
+                                function (e) {
+                                    console.log(e);
+                                }
+                            );
+                        }
+                    });
+
+                }
+                else {
+                    bot.send(`держи \n \n ${res}`, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                }
+            });
+            break;
+        }
+        default: {
+            if (!isReadyForReply) {
+                break;
+            }
+            dialogFlow.askDialogFlow(message).then(
+                response => {
+                    bot.send(response, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                },
+                error => console.log('promise dialogFlow error ' + error)
+            )
+        }
+    }
+})
