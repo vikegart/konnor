@@ -23,7 +23,7 @@ const regWho = /кто/i;
 const regStopCallingByName = /заткнись чувак/i;
 const regResumeCallingByName = /я скучал|я скучала/i;
 const regName = /коннор|connor|конор|андроид/i;
-const regWeather = /weather|погод[аыен]|дождик|дождь/i;
+const regWeather = /weather|погод[ауыен]|дождик|дождь/i;
 const regSong = /текст песни/i;
 const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
@@ -68,6 +68,8 @@ bot.on('sticker', message => {
 bot.on('voice', message => {
     console.log('get voice ' + util.inspect(message));
     const options = { forward_messages: message.id.toString() };
+    bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
+        .then(res => console.log(util.inspect(res)));
     voiceToText.voiceMessageToText(message).then(
         response => {
             bot.send(response, message.peer_id, options).catch(
@@ -94,6 +96,8 @@ bot.on('update', update => {
             for (let i = 0; i < message.fwd_messages.length; i++) {
                 let fwd_message = message.fwd_messages[i];
                 if (voiceToText.hasVoiceAttached(fwd_message)) {
+                    bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
+                        .then(res => console.log(util.inspect(res)));
                     voiceToText.voiceMessageToText(fwd_message).then(
                         response => {
                             bot.send(response, message.peer_id, { forward_messages: message.id.toString() }).catch(
@@ -137,6 +141,10 @@ bot.get(/./, message => {
             break;
         }
         case regMentionAll.test(message.text): {
+            bot.api('messages.getChat', { chat_id: message.peer_id })
+                .then(res => {
+                    console.log(util.inspect(res));
+                });
             bot.send('я призываю всех ' + `(${users.toString()})`, message.peer_id).catch(
                 function (e) {
                     console.log(e);
@@ -179,6 +187,8 @@ bot.get(/./, message => {
             break;
         }
         case regWeather.test(message.text) && isReadyForReply: {
+            bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
+                .then(res => console.log(util.inspect(res)));
             askForWearherSaratov.askForWeather().then(
                 response => {
                     console.log('promise weather ' + response);
