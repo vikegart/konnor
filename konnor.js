@@ -17,11 +17,6 @@ const commands = require('./consts/commands');
 //don't forget to add tokens in file and rename him
 const TOKENS = require('./secret_tokens');
 
-voiceToText.yandexToken = TOKENS.yandexSpeech;
-dialogFlow.dialogFlowToken = TOKENS.dialogFlow;
-askForWearherSaratov.apiKey = TOKENS.openWeather;
-
-
 const regMentionAll = /позови всех/i;
 const regGiftAll = /поздравь всех/i;
 const regWho = /кто/i;
@@ -98,7 +93,7 @@ bot.on('update', update => {
         if (message.fwd_messages.length != 0) {
             for (let i = 0; i < message.fwd_messages.length; i++) {
                 let fwd_message = message.fwd_messages[i];
-                if (voiceToText.hasVoiceAttached(fwd_message)){
+                if (voiceToText.hasVoiceAttached(fwd_message)) {
                     voiceToText.voiceMessageToText(fwd_message).then(
                         response => {
                             bot.send(response, message.peer_id, { forward_messages: message.id.toString() }).catch(

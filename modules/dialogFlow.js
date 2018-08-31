@@ -1,5 +1,6 @@
 const apiai = require('apiai');
-let dialogFlowToken = 'empty';
+const TOKENS = require('../secret_tokens');
+let dialogFlowToken = TOKENS.dialogFlow;
 
 const NeuroSessionId = 'e4278f61-9437-4dff-a24b-aaaaaaaaaaaa';
 const fallBackText = 'Связь с центром не установлена, сорре(';
@@ -30,5 +31,4 @@ const askDialogFlow = (message) => {
 
 module.exports = {
     askDialogFlow: askDialogFlow,
-    dialogFlowToken: dialogFlowToken,
 }

@@ -2,10 +2,11 @@ const https = require('https');
 const fs = require('fs');
 const yandex_speech = require('yandex-speech');
 const parseString = require('xml2js').parseString;
+const TOKENS = require('../secret_tokens');
 
 const folderName = './voices/';
 
-let yandexToken = '';
+const yandexToken = TOKENS.yandexSpeech;
 
 const download = function (url, dest, cb) { //cb - callBack
     const file = fs.createWriteStream(folderName + dest);
@@ -70,6 +71,5 @@ const hasVoiceAttached = (message) => {
 module.exports = {
     voiceMessageToText: voiceMessageToText,
     hasVoiceAttached: hasVoiceAttached,
-    yandexToken: yandexToken
 }
 
