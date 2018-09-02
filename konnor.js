@@ -31,6 +31,10 @@ const regWhatUCan = /что ты умеешь|можешь|список кома
 let isReadyForReply = true;
 let isReadyForWeather = true;
 
+const debugConsole = (variable, depth) => {
+    DEBUG_MODE && console.log('debug: ' + util.inspect(variable, false, depth = 8));
+}
+
 const bot = new Bot({
     token: TOKENS.vkGroupFullRight,
     group_id: TOKENS.groupId
@@ -57,6 +61,9 @@ bot.on('poll-error', error => {
 })
 
 bot.on('sticker', message => {
+    if (message.peer_id > 1000000000) { //message from conversation
+        return;
+    }
     let rand = Math.floor(Math.random() * phrasesSticker.length);
     bot.send(phrasesSticker[rand], message.peer_id).catch(
         function (e) {
@@ -123,7 +130,6 @@ bot.on('update', update => {
 })
 
 bot.get(/./, message => {
-    console.log('get message ' + util.inspect(message));
     if (message.peer_id > 1000000000) { //message from conversation
         if (!regName.test(message.text)) { //if no name calling - no answeer
             return;
@@ -141,15 +147,25 @@ bot.get(/./, message => {
             break;
         }
         case regMentionAll.test(message.text): {
-            bot.api('messages.getChat', { chat_id: message.peer_id })
+            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
                 .then(res => {
-                    console.log(util.inspect(res));
-                });
-            bot.send('я призываю всех ' + `(${users.toString()})`, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
+                    //const usersNamesOrIds = res.profiles.map(profile => profile.screen_name != '' ? profile.screen_name : profile.id );
+                    //console.log(util.inspect(usersNamesOrIds));
+                    const usersIds = res.profiles.map(profile => profile.id);
+                    const mentionIds = usersIds.map(id => `@id${id}`);
+                    debugConsole(usersIds);
+                    debugConsole(mentionIds);
+                    bot.send('я призываю всех ' + `(${mentionIds.toString()})`, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                })
+                .catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                )
             break;
         }
         case regGiftAll.test(message.text) && isReadyForReply: {
