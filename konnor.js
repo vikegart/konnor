@@ -9,7 +9,6 @@ const askForWearherSaratov = require('./modules/weatherSaratov');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
 
-const users = require('./consts/usersArr');
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
 const commands = require('./consts/commands');
