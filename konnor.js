@@ -138,12 +138,24 @@ bot.get(/./, message => {
 
     switch (true) {
         case regWho.test(message.text) && isReadyForReply: {
-            let rand = Math.floor(Math.random() * users.length);
-            bot.send('хмм... кажется это ' + `(${users[rand]})`, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
+            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
+                .then(res => {
+                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
+                    debugConsole(mentionIds);
+                    const rand = Math.floor(Math.random() * mentionIds.length);
+                    bot.send((mentionIds.length > 1
+                        ? `хмм... кажется это ${mentionIds[rand]}`
+                        : `ты :D , но лучше спроси меня об этом в беседе`), message.peer_id).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        );
+                })
+                .catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                );
             break;
         }
         case regMentionAll.test(message.text): {
@@ -151,11 +163,9 @@ bot.get(/./, message => {
                 .then(res => {
                     //const usersNamesOrIds = res.profiles.map(profile => profile.screen_name != '' ? profile.screen_name : profile.id );
                     //console.log(util.inspect(usersNamesOrIds));
-                    const usersIds = res.profiles.map(profile => profile.id);
-                    const mentionIds = usersIds.map(id => `@id${id}`);
-                    debugConsole(usersIds);
+                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
                     debugConsole(mentionIds);
-                    bot.send('я призываю всех ' + `(${mentionIds.toString()})`, message.peer_id).catch(
+                    bot.send('я призываю всех ' + `${mentionIds.toString()}`, message.peer_id).catch(
                         function (e) {
                             console.log(e);
                         }
@@ -165,15 +175,25 @@ bot.get(/./, message => {
                     function (e) {
                         console.log(e);
                     }
-                )
+                );
             break;
         }
         case regGiftAll.test(message.text) && isReadyForReply: {
-            bot.send('всех с праздником :D ' + `(${users.toString()})`, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
+            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
+                .then(res => {
+                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
+                    debugConsole(mentionIds);
+                    bot.send('всех с праздником :D ' + `${mentionIds.toString()}`, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                })
+                .catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                );
             break;
         }
         case regStopCallingByName.test(message.text) && isReadyForReply: {
