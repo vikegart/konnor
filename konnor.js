@@ -1,6 +1,6 @@
 console.log('all ok');
 
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
