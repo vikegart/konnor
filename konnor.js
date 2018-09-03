@@ -49,6 +49,7 @@ source.load().then(
     response => {
         debugConsole(response);
         proxyList = response;
+        source.stop();
     },
     reject => debugConsole(reject)
 );
