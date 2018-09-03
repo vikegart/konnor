@@ -1,6 +1,8 @@
 console.log('all ok');
 
 const DEBUG_MODE = true;
+const freeProxyList = require('ps-free-proxy-list'); 
+const source = freeProxyList();
 const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
@@ -29,6 +31,8 @@ const regWhatUCan = /что ты умеешь|можешь|список кома
 
 let isReadyForReply = true;
 let isReadyForWeather = true;
+let proxyList = [];
+
 
 const debugConsole = (variable, depth) => {
     DEBUG_MODE && console.log('debug: ' + util.inspect(variable, false, depth = 8));
@@ -40,7 +44,16 @@ const bot = new Bot({
 }).start()
 
 console.log('bot started'); //spam weather
-!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather().then(
+//get proxyList for day
+source.load().then(
+    response => {
+        debugConsole(response);
+        proxyList = response;
+    },
+    reject => debugConsole(reject)
+);
+
+!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather(proxyList[0] = '').then(
     response => {
         console.log('promise weather ' + response);
         for (let i = 0; i < chatsForSend.length; i++) {
@@ -224,7 +237,7 @@ bot.get(/./, message => {
         case regWeather.test(message.text) && isReadyForReply: {
             bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
                 .then(res => console.log(util.inspect(res)));
-            askForWearherSaratov.askForWeather().then(
+            askForWearherSaratov.askForWeather(proxyList[0] = '').then(
                 response => {
                     console.log('promise weather ' + response);
                     bot.send(response, message.peer_id).catch(
@@ -276,6 +289,13 @@ bot.get(/./, message => {
                     );
                 }
             });
+            break;
+        }
+        case /proxy/i.test(message.text): {
+            source.load().then(
+                response => debugConsole(response),
+                reject => debugConsole(reject)
+            )
             break;
         }
         default: {

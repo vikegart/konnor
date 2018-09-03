@@ -8,6 +8,7 @@
     "google": "^2.1.0",
     "node-vk-bot": "1.0.2",
     "node-vk-bot-api": "^1.2.0",
+    "ps-free-proxy-list": "^1.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "util": "^0.11.0",
