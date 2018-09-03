@@ -12,13 +12,14 @@ const regRain = /rain/i;
 const DEBUG = false;
 const urlProxy = 'http://142.93.202.233:8080';
 
-const options = {
+let options = {
     uri: urlWeatherNextFive,
     json: true, // Automatically parses the JSON string in the response
     proxy: urlProxy,
 };
 
-const askForWeather = () => {
+const askForWeather = (newProxy) => {
+    options.proxy = newProxy;
     return requestPromise(options).then(
         response => {
             const weather = response;
