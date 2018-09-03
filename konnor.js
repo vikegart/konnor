@@ -1,6 +1,6 @@
 console.log('all ok');
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = require('./konnor_config') || true;
 const freeProxyList = require('ps-free-proxy-list'); 
 const source = freeProxyList();
 const lyric = require("lyric-get");
