@@ -54,7 +54,7 @@ source.load().then(
     reject => debugConsole(reject)
 );
 
-!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather(proxyList[0] = '').then(
+!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
     response => {
         console.log('promise weather ' + response);
         for (let i = 0; i < chatsForSend.length; i++) {
@@ -238,7 +238,7 @@ bot.get(/./, message => {
         case regWeather.test(message.text) && isReadyForReply: {
             bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
                 .then(res => console.log(util.inspect(res)));
-            askForWearherSaratov.askForWeather(proxyList[0] = '').then(
+            askForWearherSaratov.askForWeather(proxyList[0] || '').then(
                 response => {
                     console.log('promise weather ' + response);
                     bot.send(response, message.peer_id).catch(
@@ -290,13 +290,6 @@ bot.get(/./, message => {
                     );
                 }
             });
-            break;
-        }
-        case /proxy/i.test(message.text): {
-            source.load().then(
-                response => debugConsole(response),
-                reject => debugConsole(reject)
-            )
             break;
         }
         default: {
