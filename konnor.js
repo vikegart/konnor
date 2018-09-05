@@ -29,6 +29,7 @@ const regSong = /текст песни/i;
 const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMeassageWithMention = /об[ъь]явление/i;
+const regSendMessageToKoshatnik = /напиши/i;
 
 
 let isReadyForReply = true;
@@ -219,6 +220,18 @@ bot.get(/./, message => {
                     console.log(e);
                 }
             );
+            break;
+        }
+        case regSendMessageToKoshatnik.test(message.text): {
+            if (message.peer_id < 1000000000) {
+                const messageToKoshatnik = message.text
+                    .split(regSendMessageToKoshatnik, 2)[1].trim();
+                bot.send(messageToKoshatnik, 2000000001).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                );
+            }
             break;
         }
         case regResumeCallingByName.test(message.text): {
