@@ -1,6 +1,6 @@
 console.log('all ok');
 
-const DEBUG_MODE = require('./konnor_config') || true;
+const DEBUG_MODE = require('./konnor_config');
 const freeProxyList = require('ps-free-proxy-list'); 
 const source = freeProxyList();
 const lyric = require("lyric-get");
@@ -30,7 +30,6 @@ const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 
 let isReadyForReply = true;
-let isReadyForWeather = true;
 let proxyList = [];
 
 
@@ -50,23 +49,23 @@ source.load().then(
         debugConsole(response);
         proxyList = response;
         source.stop();
+        !DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
+            response => {
+                console.log('promise weather ' + response);
+                for (let i = 0; i < chatsForSend.length; i++) {
+                    bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
+                        function (e) {
+                            console.log('send weather to chat vk err ' + e);
+                        }
+                    );
+                }
+            },
+            error => console.log('promise weather error' + error)
+        );
     },
     reject => debugConsole(reject)
 );
 
-!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
-    response => {
-        console.log('promise weather ' + response);
-        for (let i = 0; i < chatsForSend.length; i++) {
-            bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
-                function (e) {
-                    console.log('send weather to chat vk err ' + e);
-                }
-            );
-        }
-    },
-    error => console.log('promise weather error' + error)
-);
 
 bot.on('poll-error', error => {
     console.error('error occurred on a working with the Long Poll server ' +
