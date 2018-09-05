@@ -42,13 +42,15 @@ const bot = new Bot({
     group_id: TOKENS.groupId
 }).start()
 
-console.log('bot started'); //spam weather
+console.log('bot started'); 
 //get proxyList for day
 source.load().then(
     response => {
         debugConsole(response);
         proxyList = response;
-        source.stop();
+        source.stop(); //stop update proxy list
+        
+        //spam weather
         !DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
             response => {
                 console.log('promise weather ' + response);
