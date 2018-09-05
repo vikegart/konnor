@@ -1,7 +1,7 @@
 console.log('all ok');
 
-const DEBUG_MODE = require('./konnor_config') || true;
-const freeProxyList = require('ps-free-proxy-list'); 
+const DEBUG_MODE = require('./konnor_config');
+const freeProxyList = require('ps-free-proxy-list');
 const source = freeProxyList();
 const lyric = require("lyric-get");
 const util = require('util');
@@ -28,9 +28,11 @@ const regWeather = /weather|погод[ауыен]|дождик|дождь/i;
 const regSong = /текст песни/i;
 const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
+const regSendMeassageWithMention = /об[ъь]явление/i;
+const regSendMessageToKoshatnik = /напиши/i;
+
 
 let isReadyForReply = true;
-let isReadyForWeather = true;
 let proxyList = [];
 
 
@@ -43,30 +45,32 @@ const bot = new Bot({
     group_id: TOKENS.groupId
 }).start()
 
-console.log('bot started'); //spam weather
+console.log('bot started');
 //get proxyList for day
 source.load().then(
     response => {
         debugConsole(response);
         proxyList = response;
-        source.stop();
+        source.stop(); //stop update proxy list
+
+        //spam weather
+        !DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
+            response => {
+                console.log('promise weather ' + response);
+                for (let i = 0; i < chatsForSend.length; i++) {
+                    bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
+                        function (e) {
+                            console.log('send weather to chat vk err ' + e);
+                        }
+                    );
+                }
+            },
+            error => console.log('promise weather error' + error)
+        );
     },
     reject => debugConsole(reject)
 );
 
-!DEBUG_MODE && isReadyForWeather && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
-    response => {
-        console.log('promise weather ' + response);
-        for (let i = 0; i < chatsForSend.length; i++) {
-            bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
-                function (e) {
-                    console.log('send weather to chat vk err ' + e);
-                }
-            );
-        }
-    },
-    error => console.log('promise weather error' + error)
-);
 
 bot.on('poll-error', error => {
     console.error('error occurred on a working with the Long Poll server ' +
@@ -218,6 +222,18 @@ bot.get(/./, message => {
             );
             break;
         }
+        case regSendMessageToKoshatnik.test(message.text): {
+            if (message.peer_id < 1000000000) {
+                const messageToKoshatnik = message.text
+                    .split(regSendMessageToKoshatnik, 2)[1].trim();
+                bot.send(messageToKoshatnik, 2000000001).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                );
+            }
+            break;
+        }
         case regResumeCallingByName.test(message.text): {
             isReadyForReply = true;
             bot.send('еее, здорова чуваки с: ', message.peer_id).catch(
@@ -233,6 +249,28 @@ bot.get(/./, message => {
                     console.log(e);
                 }
             );
+            break;
+        }
+        case regSendMeassageWithMention.test(message.text): {
+            const alertMessage = message.text
+                .replace(regName, '')
+                .split(regSendMeassageWithMention, 2)[1]
+                .trim();
+            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
+                .then(res => {
+                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
+                    debugConsole(mentionIds);
+                    bot.send(`сообщение для всех: ${alertMessage} ${mentionIds.toString()}`, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    );
+                })
+                .catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                );
             break;
         }
         case regWeather.test(message.text) && isReadyForReply: {
