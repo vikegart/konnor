@@ -67,6 +67,17 @@ source.load().then(
             },
             error => console.log('promise weather error' + error)
         );
+        DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
+            response => {
+                console.log('promise weather ' + response);
+                bot.send('Доброго утра! ' + response, 141438738).catch(
+                    function (e) {
+                        console.log('send weather to chat vk err ' + e);
+                    }
+                );
+            },
+            error => console.log('promise weather error' + error)
+        );
     },
     reject => debugConsole(reject)
 );
