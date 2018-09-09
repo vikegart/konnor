@@ -1,13 +1,12 @@
 console.log('all ok');
 
 const DEBUG_MODE = require('./konnor_config');
-const freeProxyList = require('ps-free-proxy-list');
-const source = freeProxyList();
 const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
 
-const askForWearherSaratov = require('./modules/weatherSaratov');
+const weatherApi = require('./modules/weather/weatherApi');
+const constructors = require('./modules/weather/constructors');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
 
@@ -46,42 +45,32 @@ const bot = new Bot({
 }).start()
 
 console.log('bot started');
-//get proxyList for day
-source.load().then(
-    response => {
-        debugConsole(response);
-        proxyList = response;
-        source.stop(); //stop update proxy list
 
-        //spam weather
-        !DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
-            response => {
-                console.log('promise weather ' + response);
-                for (let i = 0; i < chatsForSend.length; i++) {
-                    bot.send('Доброго утра! ' + response, chatsForSend[i]).catch(
-                        function (e) {
-                            console.log('send weather to chat vk err ' + e);
-                        }
-                    );
-                }
-            },
-            error => console.log('promise weather error' + error)
-        );
-        DEBUG_MODE && askForWearherSaratov.askForWeather(proxyList[0] || '').then(
-            response => {
-                console.log('promise weather ' + response);
-                bot.send('Доброго утра! ' + response, 141438738).catch(
-                    function (e) {
-                        console.log('send weather to chat vk err ' + e);
-                    }
-                );
-            },
-            error => console.log('promise weather error' + error)
-        );
-    },
-    reject => debugConsole(reject)
-);
+DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
+    let messageArr = ['', res.city, 'сегодня'];
+    let response = constructors.generateMessage('', res, messageArr);
+    bot.send(response, 141438738).catch(
+        function (e) {
+            console.log('send vk weather err ' + e);
+        }
+    );
+}).catch((e) => {
+    debugConsole(e);
+});
 
+!DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
+    let messageArr = ['', res.city, 'сегодня'];
+    let response = constructors.generateMessage('', res, messageArr);
+    chatsForSend.forEach((chatId) => {
+        bot.send(response, chatId).catch(
+            function (e) {
+                console.log('send vk weather err ' + e);
+            }
+        );
+    })
+}).catch((e) => {
+    debugConsole(e);
+});
 
 bot.on('poll-error', error => {
     console.error('error occurred on a working with the Long Poll server ' +
@@ -287,17 +276,18 @@ bot.get(/./, message => {
         case regWeather.test(message.text) && isReadyForReply: {
             bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
                 .then(res => console.log(util.inspect(res)));
-            askForWearherSaratov.askForWeather(proxyList[0] || '').then(
-                response => {
-                    console.log('promise weather ' + response);
-                    bot.send(response, message.peer_id).catch(
-                        function (e) {
-                            console.log('send vk weather err ' + e);
-                        }
-                    );
-                },
-                error => console.log('promise weather error' + error)
-            );
+            let messageArr = message.text.trim().split(' ');
+            weatherApi.fetchWeatherForCity(messageArr[1]).then((res) => {
+                messageArr[1] = res.city;
+                let response = constructors.generateMessage('', res, messageArr);
+                bot.send(response, message.peer_id).catch(
+                    function (e) {
+                        console.log('send vk weather err ' + e);
+                    }
+                );
+            }).catch((e) => {
+                debugConsole(e);
+            })
             break;
         }
         case regSong.test(message.text): {
