@@ -1,5 +1,8 @@
-const chislOrZnamen = () => {
-    const now = new Date();
+const chislOrZnamen = (date) => {
+    let now = new Date();
+    if (date) {
+        now = date;
+    }
     //изначально считаем что сейчас знаменатель
     //true - числитель
     //false - знаменатель
