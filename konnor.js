@@ -279,7 +279,7 @@ bot.get(/./, message => {
         case regWeather.test(message.text) && isReadyForReply: {
             bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
                 .then(res => console.log(util.inspect(res)));
-            let messageArr = message.text.trim().split(' ');
+            let messageArr = message.text.replace(regName, '').replace(/,/, '').trim().split(' ');
             weatherApi.fetchWeatherForCity(messageArr[1]).then((res) => {
                 messageArr[1] = res.city;
                 let response = constructors.generateMessage('', res, messageArr);

@@ -27,6 +27,9 @@ module.exports = {
         return temperature > 0 ? `+${Math.round(temperature)}` : Math.round(temperature);
     },
     generateMessage(messageObj, weather, array) {
+        if (array[2] == undefined){
+            return this.generateCurrentForecast(weather.currently, array[1]);
+        }
         let condition = array[2].toLowerCase();
         let daily = this.insertHours(weather.daily.data, weather.hourly.data, weather.timezone);
         switch (condition) {
