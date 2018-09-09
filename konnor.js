@@ -9,6 +9,7 @@ const weatherApi = require('./modules/weather/weatherApi');
 const constructors = require('./modules/weather/constructors');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
+const shedule = require('./modules/shedule/getShedule');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
@@ -29,6 +30,8 @@ const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
+const regChislOrZnam = /какая неделя/i;
+const regGetShedule = /расписание/i;
 
 
 let isReadyForReply = true;
@@ -329,6 +332,23 @@ bot.get(/./, message => {
                     );
                 }
             });
+            break;
+        }
+        case regChislOrZnam.test(message.text): {
+            bot.send(`сейчас ${shedule.chislOrZnam()}`, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
+            break;
+        }
+        case regGetShedule.test(message.text): {
+            // ( + 6 ) % 7 'cause in Russia monday - first day of week
+            bot.send(`на сегодня: \n  ${shedule.getShedule((new Date().getDay() + 6) % 7)}`, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            );
             break;
         }
         default: {
