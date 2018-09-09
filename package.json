@@ -5,10 +5,9 @@
   "main": "konnor.js",
   "dependencies": {
     "apiai": "^4.0.3",
-    "google": "^2.1.0",
+    "axios": "^0.18.0",
+    "moment-timezone": "^0.5.21",
     "node-vk-bot": "1.0.2",
-    "node-vk-bot-api": "^1.2.0",
-    "ps-free-proxy-list": "^1.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "util": "^0.11.0",
