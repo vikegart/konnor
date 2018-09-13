@@ -30,7 +30,7 @@ const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
-const regChislOrZnam = /какая неделя/i;
+const regChislOrZnam = /какая неделя|неделя какая/i;
 const regGetShedule = /расписание/i;
 
 
