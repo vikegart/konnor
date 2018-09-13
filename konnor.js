@@ -10,6 +10,7 @@ const constructors = require('./modules/weather/constructors');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
 const shedule = require('./modules/shedule/getShedule');
+const calculator = require('./modules/calculator');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
@@ -341,7 +342,7 @@ bot.get(/./, message => {
                 d.setDate(d.getDate() + 1);
                 parity = 'завтра ' + shedule.chislOrZnam(d);
             }
-            if (/следующая/i.test(message.text)){
+            if (/следующая/i.test(message.text)) {
                 let d = new Date();
                 d.setDate(d.getDate() + 7);
                 parity = 'следующая неделя ' + shedule.chislOrZnam(d);
@@ -366,15 +367,28 @@ bot.get(/./, message => {
             if (!isReadyForReply) {
                 break;
             }
-            dialogFlow.askDialogFlow(message).then(
+            cleanText = message.text.replace(regName, '');
+            calculator(cleanText).then(
                 response => {
                     bot.send(response, message.peer_id).catch(
                         function (e) {
                             console.log(e);
                         }
-                    );
+                    )
                 },
-                error => console.log('promise dialogFlow error ' + error)
+                error => {
+                    console.log('calc err: ' + error);
+                    dialogFlow.askDialogFlow(message).then(
+                        response => {
+                            bot.send(response, message.peer_id).catch(
+                                function (e) {
+                                    console.log(e);
+                                }
+                            )
+                        },
+                        error => console.log('promise dialogFlow error ' + error)
+                    )
+                }
             )
         }
     }
