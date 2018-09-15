@@ -1,5 +1,5 @@
 # konnor
-bot for vk - voices to text, mention all and other features
+bot for vk - voices to text, mention all, week pairity and other features
 
 ## Getting Started
 
