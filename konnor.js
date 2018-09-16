@@ -36,7 +36,6 @@ const regGetShedule = /расписание/i;
 
 
 let isReadyForReply = true;
-let proxyList = [];
 
 
 const debugConsole = (variable, depth) => {
@@ -61,6 +60,21 @@ DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
 }).catch((e) => {
     debugConsole(e);
 });
+
+// for Olya TODO: rewrite
+DEBUG_MODE && weatherApi.fetchWeatherForCity('Аше').then((res) => {
+    let messageArr = ['', res.city, 'сегодня'];
+    let response = constructors.generateMessage('', res, messageArr);
+    bot.send('хорошего отдыха, у меня для тебя вот что: ' + response, 108070501).catch(
+        function (e) {
+            console.log('send vk weather err ' + e);
+        }
+    );
+}).catch((e) => {
+    debugConsole(e);
+});
+
+
 
 !DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
     let messageArr = ['', res.city, 'сегодня'];
