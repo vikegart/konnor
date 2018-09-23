@@ -10,8 +10,7 @@ module.exports = {
         return axios.get(requestGeoUrl)
             .then((res) => {
                 const point = res.data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos;
-                const lat = point.split(' ')[0];
-                const lng = point.split(' ')[1];
+                const [lng, lat] = point.split(' ');
                 city = res.data.response.GeoObjectCollection.featureMember[0].GeoObject.name;
                 return {
                     lat,
