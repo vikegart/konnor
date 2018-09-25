@@ -31,14 +31,14 @@ const voiceMessageToText = (message) => {
     return new Promise((resolve, reject) => {
         download(urlVoice, generatedFilename, (err) => {
             if (err) {
-                reject(err);
+                return reject(err);
             }
             yandex_speech.ASR({
                 developer_key: yandexToken,
                 file: folderName + generatedFilename,
             }, function (err, httpResponse, xml) {
                 if (err) {
-                    reject(err);
+                    return reject(err);
                 } else {
                     fs.unlink(folderName + generatedFilename, (err) => { //del file
                         if (err) {
@@ -46,11 +46,14 @@ const voiceMessageToText = (message) => {
                         }
                     });
                     parseString(xml, (err, result) => {
+                        if (err){
+                           return reject('ого, что-то с яндексом');
+                        }
                         const success = result.recognitionResults.$.success;
                         if (success == 1) {
-                            resolve(result.recognitionResults.variant[0]._);
+                            return resolve(result.recognitionResults.variant[0]._);
                         } else {
-                            reject('не удалось распознать');
+                            return reject('я не понял твое голосовое сообщение');
                         }
                     });
                 }
@@ -64,7 +67,6 @@ const hasVoiceAttached = (message) => {
     return message.attachments.length != 0 &&
         message.attachments[0].type === 'doc' &&
         message.attachments[0].doc.preview.audio_msg
-
 
 }
 
