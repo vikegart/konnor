@@ -19,6 +19,8 @@ const commands = require('./consts/commands');
 //don't forget to add tokens in file and rename him
 const TOKENS = require('./secret_tokens');
 
+const neuroWeather = require('./modules/neuroWeather');
+
 const regMentionAll = /позови всех/i;
 const regGiftAll = /поздравь всех/i;
 const regWho = /кто/i;
@@ -155,6 +157,8 @@ bot.get(/./, message => {
             return;
         }
     }
+    bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
+                .then(res => console.log(util.inspect(res)));
 
     switch (true) {
         case regWho.test(message.text) && isReadyForReply: {
@@ -276,23 +280,6 @@ bot.get(/./, message => {
                 );
             break;
         }
-        case regWeather.test(message.text) && isReadyForReply: {
-            bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => console.log(util.inspect(res)));
-            let messageArr = message.text.replace(regName, '').replace(/,/, '').trim().split(' ');
-            weatherApi.fetchWeatherForCity(messageArr[1]).then((res) => {
-                messageArr[1] = res.city;
-                let response = constructors.generateMessage('', res, messageArr);
-                bot.send(response, message.peer_id).catch(
-                    function (e) {
-                        console.log('send vk weather err ' + e);
-                    }
-                );
-            }).catch((e) => {
-                debugConsole(e);
-            })
-            break;
-        }
         case regSong.test(message.text): {
             //get song name and artist from message
 
@@ -377,16 +364,51 @@ bot.get(/./, message => {
                 },
                 error => {
                     console.log('calc err: ' + error);
-                    dialogFlow.askDialogFlow(message).then(
+                    neuroWeather(message.text, message.peer_id).then(
                         response => {
-                            bot.send(response, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            )
+                            debugConsole(response);
+                            if (response.city) {
+                                weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                                    let messageArr = [];
+                                    messageArr[1] = res.city;
+                                    if (response.dateTime) {
+                                        messageArr[2] = response.dateTime;
+                                    }
+                                    let weather = constructors.generateMessage('', res, messageArr);
+                                    bot.send(weather, message.peer_id).catch(
+                                        function (e) {
+                                            console.log('send vk weather err ' + e);
+                                        }
+                                    );
+                                }).catch((e) => {
+                                    debugConsole(e);
+                                })
+                            }
+                            if (response.matchedWeather) {
+                                bot.send(response.text, message.peer_id).catch(
+                                    function (e) {
+                                        console.log(e);
+                                    }
+                                )
+                            } else {
+                                dialogFlow.askDialogFlow(message).then(
+                                    response => {
+                                        bot.send(response, message.peer_id).catch(
+                                            function (e) {
+                                                console.log(e);
+                                            }
+                                        )
+                                    },
+                                    error => console.log('promise dialogFlow error ' + error)
+                                )
+                            }
                         },
-                        error => console.log('promise dialogFlow error ' + error)
+                        error => {
+                            debugConsole(error);
+                        }
                     )
+
+
                 }
             )
         }

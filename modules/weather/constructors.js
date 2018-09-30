@@ -32,20 +32,20 @@ module.exports = {
         }
         let condition = array[2].toLowerCase();
         let daily = this.insertHours(weather.daily.data, weather.hourly.data, weather.timezone);
-        switch (condition) {
-            case 'сейчас':
+        switch (true) {
+            case /сейчас/i.test(condition):
                 return this.generateCurrentForecast(weather.currently, array[1]);
                 break;
-            case 'завтра':
+            case /завтра/i.test(condition):
                 return this.generateTomorrowForecast(daily[1], array[1]);
                 break;
-            case 'сегодня':
+            case /сегодня/i.test(condition):
                 return this.generateTodayForecast(daily[0], array[1]);
                 break;
-            case 'неделя':
+            case /недел[яюие]/i.test(condition):
                 return this.generateWeekForecast(weather.daily, array[1], weather.timezone);
             default:
-                return "я понимаю только 'завтра' 'сейчас' 'сегодня' 'неделя' "
+                return "я могут сказать только про 'завтра' 'сейчас' 'сегодня' или на 'неделя' "
         }
     },
     generateCurrentForecast(currently, city) {
