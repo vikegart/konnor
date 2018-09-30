@@ -9,7 +9,7 @@ const askNeuroWeater = (query, userId) => {
     console.log(query, userId);
     const sessionId = userId.toString();
     const sessionClient = new dialogflow.SessionsClient({ keyFilename: './gweather.json' });
-    const sessionPath = sessionClient.sessionPath(projectId, sessionId+'testing');
+    const sessionPath = sessionClient.sessionPath(projectId, sessionId);
 
     // The text query request.
     const request = {
