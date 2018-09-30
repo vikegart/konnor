@@ -382,7 +382,7 @@ bot.get(/./, message => {
                     neuroWeather(message.text, message.peer_id).then(
                         response => {
                             debugConsole(response);
-                            if (response.city){
+                            if (response.city) {
                                 weatherApi.fetchWeatherForCity(response.city).then((res) => {
                                     let messageArr = [];
                                     messageArr[1] = res.city;
@@ -399,27 +399,31 @@ bot.get(/./, message => {
                                     debugConsole(e);
                                 })
                             }
-                            bot.send(response.text, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            )
+                            if (response.matchedWeather) {
+                                bot.send(response.text, message.peer_id).catch(
+                                    function (e) {
+                                        console.log(e);
+                                    }
+                                )
+                            } else {
+                                dialogFlow.askDialogFlow(message).then(
+                                    response => {
+                                        bot.send(response, message.peer_id).catch(
+                                            function (e) {
+                                                console.log(e);
+                                            }
+                                        )
+                                    },
+                                    error => console.log('promise dialogFlow error ' + error)
+                                )
+                            }
                         },
                         error => {
                             debugConsole(error);
                         }
                     )
 
-                    // dialogFlow.askDialogFlow(message).then(
-                    //     response => {
-                    //         bot.send(response, message.peer_id).catch(
-                    //             function (e) {
-                    //                 console.log(e);
-                    //             }
-                    //         )
-                    //     },
-                    //     error => console.log('promise dialogFlow error ' + error)
-                    // )
+
                 }
             )
         }

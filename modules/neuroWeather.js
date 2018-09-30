@@ -9,7 +9,7 @@ const askNeuroWeater = (query, userId) => {
     console.log(query, userId);
     const sessionId = userId.toString();
     const sessionClient = new dialogflow.SessionsClient({ keyFilename: './gweather.json' });
-    const sessionPath = sessionClient.sessionPath(projectId, sessionId);
+    const sessionPath = sessionClient.sessionPath(projectId, sessionId+'testing');
 
     // The text query request.
     const request = {
@@ -48,12 +48,14 @@ const askNeuroWeater = (query, userId) => {
                         text: result.fulfillmentText,
                         city: result.parameters.fields.address.structValue.fields.city.stringValue,
                         dateTime: dateTime,
+                        matchedWeather: result.intent,
                     })
                 } else {
                     return resolve({
                         text: result.fulfillmentText,
                         city: undefined,
-                        dateTime: dateTime
+                        dateTime: dateTime,
+                        matchedWeather: result.intent,
                     })
                 }
             })
