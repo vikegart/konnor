@@ -280,21 +280,6 @@ bot.get(/./, message => {
                 );
             break;
         }
-        case regWeather.test(message.text) && false: {
-            let messageArr = message.text.replace(regName, '').replace(/,/, '').trim().split(' ');
-            weatherApi.fetchWeatherForCity(messageArr[1]).then((res) => {
-                messageArr[1] = res.city;
-                let response = constructors.generateMessage('', res, messageArr);
-                bot.send(response, message.peer_id).catch(
-                    function (e) {
-                        console.log('send vk weather err ' + e);
-                    }
-                );
-            }).catch((e) => {
-                debugConsole(e);
-            })
-            break;
-        }
         case regSong.test(message.text): {
             //get song name and artist from message
 
