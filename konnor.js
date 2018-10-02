@@ -11,6 +11,7 @@ const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
 const shedule = require('./modules/shedule/getShedule');
 const calculator = require('./modules/calculator');
+const anekdot = require('./modules/anekdot');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
@@ -35,6 +36,7 @@ const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
 const regChislOrZnam = /какая неделя|неделя какая/i;
 const regGetShedule = /расписание/i;
+const regAnekdot = /анекдот/i;
 
 
 let isReadyForReply = true;
@@ -347,6 +349,25 @@ bot.get(/./, message => {
                     console.log(e);
                 }
             );
+            break;
+        }
+        case regAnekdot.test(message.text): {
+            anekdot(!/плохой/i.test(message.text)).then(
+                res => {
+                    bot.send(res, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    )
+                },
+                err => {
+                    bot.send(err, message.peer_id).catch(
+                        function (e) {
+                            console.log(e);
+                        }
+                    )
+                }
+            )
             break;
         }
         default: {
