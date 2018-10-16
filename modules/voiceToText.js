@@ -46,8 +46,8 @@ const voiceMessageToText = (message) => {
                         }
                     });
                     parseString(xml, (err, result) => {
-                        if (err){
-                           return reject('ого, что-то с яндексом');
+                        if (err) {
+                            return reject('ого, что-то с яндексом');
                         }
                         const success = result.recognitionResults.$.success;
                         if (success == 1) {
