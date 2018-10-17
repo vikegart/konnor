@@ -161,8 +161,8 @@ Group.onMessageText((message) => {
         return;
     }
 
-    if (message.body.length > 200 && /я точно илья/i.test(message.body)) {
-        message.addText('В сообщении должно быть не больше 200 символов или илья').send()
+    if (message.body.length > 200 || !(/я точно илья/i.test(message.body))) {
+        message.addText('В сообщении должно быть не больше 200 символов или илья').send();
     } else {
         message.setTyping();    
 
