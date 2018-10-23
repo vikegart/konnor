@@ -9,9 +9,7 @@ const weatherApi = require('./modules/weather/weatherApi');
 const constructors = require('./modules/weather/constructors');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
-const shedule = require('./modules/shedule/getShedule');
 const calculator = require('./modules/calculator');
-const anekdot = require('./modules/anekdot');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
@@ -28,15 +26,11 @@ const regWho = /кто/i;
 const regStopCallingByName = /заткнись чувак/i;
 const regResumeCallingByName = /я скучал|я скучала/i;
 const regName = /коннор|connor|конор|андроид/i;
-const regWeather = /weather|погод[ауыен]|дождик|дождь/i;
 const regSong = /текст песни/i;
 const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
-const regChislOrZnam = /какая неделя|неделя какая/i;
-const regGetShedule = /расписание/i;
-const regAnekdot = /анекдот/i;
 
 
 let isReadyForReply = true;
@@ -273,7 +267,7 @@ bot.get(/./, message => {
     for (let skillName in skillList){
         const regExp = RegExp(skillName, 'i');
         if (regExp.test(message.text)) {
-            console.log('anekdot matched');
+            console.log('matched: ' + skillName);
             skillList[skillName](bot, message);
             return;
         }
@@ -440,53 +434,6 @@ bot.get(/./, message => {
             });
             break;
         }
-        case regChislOrZnam.test(message.text): {
-            let parity = 'сейчас ' + shedule.chislOrZnam();
-            if (/завтра/i.test(message.text)) {
-                let d = new Date();
-                d.setDate(d.getDate() + 1);
-                parity = 'завтра ' + shedule.chislOrZnam(d);
-            }
-            if (/следующая/i.test(message.text)) {
-                let d = new Date();
-                d.setDate(d.getDate() + 7);
-                parity = 'следующая неделя ' + shedule.chislOrZnam(d);
-            }
-            bot.send(parity, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
-        case regGetShedule.test(message.text): {
-            // ( + 6 ) % 7 'cause in Russia monday - first day of week
-            bot.send(`на сегодня: \n  ${shedule.getShedule((new Date().getDay() + 6) % 7)}`, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
-        // case regAnekdot.test(message.text): {
-        //     anekdot(!/плохой/i.test(message.text)).then(
-        //         res => {
-        //             bot.send(res, message.peer_id).catch(
-        //                 function (e) {
-        //                     console.log(e);
-        //                 }
-        //             )
-        //         },
-        //         err => {
-        //             bot.send(err, message.peer_id).catch(
-        //                 function (e) {
-        //                     console.log(e);
-        //                 }
-        //             )
-        //         }
-        //     )
-        //     break;
-        // }
         default: {
             if (!isReadyForReply) {
                 break;
