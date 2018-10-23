@@ -53,31 +53,99 @@ const bot = new Bot({
 
 console.log('bot started');
 
-DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
-    let messageArr = ['', res.city, 'сегодня'];
-    let response = constructors.generateMessage('', res, messageArr);
-    bot.send(response, 141438738).catch(
-        function (e) {
-            console.log('send vk weather err ' + e);
-        }
-    );
-}).catch((e) => {
-    debugConsole(e);
-});
-
-!DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
-    let messageArr = ['', res.city, 'сегодня'];
-    let response = constructors.generateMessage('', res, messageArr);
-    chatsForSend.forEach((chatId) => {
-        bot.send(response, chatId).catch(
-            function (e) {
-                console.log('send vk weather err ' + e);
+const dubugChatsId = require('./consts/debug_chatsID');
+DEBUG_MODE && dubugChatsId.forEach((chatId) => {
+    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+        response => {
+            debugConsole(response);
+            if (response.city) {
+                weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                    let messageArr = [];
+                    messageArr[1] = res.city;
+                    if (response.dateTime) {
+                        messageArr[2] = response.dateTime;
+                    }
+                    let weather = constructors.generateMessage('', res, messageArr);
+                    bot.send(weather, chatId).catch(
+                        function (e) {
+                            console.log('send vk weather err ' + e);
+                        }
+                    );
+                }).catch((e) => {
+                    debugConsole(e);
+                })
             }
-        );
-    })
-}).catch((e) => {
-    debugConsole(e);
-});
+            if (response.matchedWeather) {
+                bot.send(response.text, chatId).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                )
+            } else {
+                dialogFlow.askDialogFlow(message).then(
+                    response => {
+                        bot.send(response, chatId).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        )
+                    },
+                    error => console.log('promise dialogFlow error ' + error)
+                )
+            }
+        },
+        error => {
+            debugConsole(error);
+        }
+    )
+})
+
+!DEBUG_MODE && chatsForSend.forEach((chatId) => {
+    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+        response => {
+            debugConsole(response);
+            if (response.city) {
+                weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                    let messageArr = [];
+                    messageArr[1] = res.city;
+                    if (response.dateTime) {
+                        messageArr[2] = response.dateTime;
+                    }
+                    let weather = constructors.generateMessage('', res, messageArr);
+                    bot.send(weather, chatId).catch(
+                        function (e) {
+                            console.log('send vk weather err ' + e);
+                        }
+                    );
+                }).catch((e) => {
+                    debugConsole(e);
+                })
+            }
+            if (response.matchedWeather) {
+                bot.send(response.text, chatId).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                )
+            } else {
+                dialogFlow.askDialogFlow(message).then(
+                    response => {
+                        bot.send(response, chatId).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        )
+                    },
+                    error => console.log('promise dialogFlow error ' + error)
+                )
+            }
+        },
+        error => {
+            debugConsole(error);
+        }
+    )
+})
+
 
 bot.on('poll-error', error => {
     console.error('error occurred on a working with the Long Poll server ' +
