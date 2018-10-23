@@ -87,4 +87,3 @@ const giveMeAnekdot = (pickGood = true) => {
 };
 
 module.exports = giveMeAnekdot;
-

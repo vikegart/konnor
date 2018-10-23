@@ -259,6 +259,8 @@ Group.onMessageText((message) => {
     }
 })
 
+const skillList = require('./skills/skillList');
+
 bot.get(/./, message => {
     if (message.peer_id > 1000000000) { //message from conversation
         if (!regName.test(message.text)) { //if no name calling - no answeer
@@ -267,6 +269,15 @@ bot.get(/./, message => {
     }
     bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
         .then(res => console.log(util.inspect(res)));
+
+    for (let skillName in skillList){
+        const regExp = RegExp(skillName, 'i');
+        if (regExp.test(message.text)) {
+            console.log('anekdot matched');
+            skillList[skillName](bot, message);
+            return;
+        }
+    }    
 
     switch (true) {
         case regWho.test(message.text) && isReadyForReply: {
@@ -457,25 +468,25 @@ bot.get(/./, message => {
             );
             break;
         }
-        case regAnekdot.test(message.text): {
-            anekdot(!/плохой/i.test(message.text)).then(
-                res => {
-                    bot.send(res, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    )
-                },
-                err => {
-                    bot.send(err, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    )
-                }
-            )
-            break;
-        }
+        // case regAnekdot.test(message.text): {
+        //     anekdot(!/плохой/i.test(message.text)).then(
+        //         res => {
+        //             bot.send(res, message.peer_id).catch(
+        //                 function (e) {
+        //                     console.log(e);
+        //                 }
+        //             )
+        //         },
+        //         err => {
+        //             bot.send(err, message.peer_id).catch(
+        //                 function (e) {
+        //                     console.log(e);
+        //                 }
+        //             )
+        //         }
+        //     )
+        //     break;
+        // }
         default: {
             if (!isReadyForReply) {
                 break;
