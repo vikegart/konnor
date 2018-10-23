@@ -20,7 +20,6 @@ const TOKENS = require('./secret_tokens');
 
 const neuroWeather = require('./modules/neuroWeather');
 
-const regMentionAll = /позови всех/i;
 const regGiftAll = /поздравь всех/i;
 const regWho = /кто/i;
 const regStopCallingByName = /заткнись чувак/i;
@@ -287,26 +286,6 @@ bot.get(/./, message => {
                                 console.log(e);
                             }
                         );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
-        case regMentionAll.test(message.text): {
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    //const usersNamesOrIds = res.profiles.map(profile => profile.screen_name != '' ? profile.screen_name : profile.id );
-                    //console.log(util.inspect(usersNamesOrIds));
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    bot.send('я призываю всех ' + `${mentionIds.toString()}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
                 })
                 .catch(
                     function (e) {
