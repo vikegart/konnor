@@ -263,11 +263,13 @@ bot.get(/./, message => {
     bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
         .then(res => console.log(util.inspect(res)));
 
+    message.text.replace(regName, ''); //delete him name
+
     for (let skillName in skillList){
         const regExp = RegExp(skillName, 'i');
         if (regExp.test(message.text)) {
             console.log('matched: ' + skillName);
-            skillList[skillName](bot, message);
+            skillList[skillName](bot, message, TOKENS);
             return;
         }
     }    
@@ -350,28 +352,28 @@ bot.get(/./, message => {
             );
             break;
         }
-        case regSendMeassageWithMention.test(message.text): {
-            const alertMessage = message.text
-                .replace(regName, '')
-                .split(regSendMeassageWithMention, 2)[1]
-                .trim();
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    bot.send(`сообщение для всех: ${alertMessage} ${mentionIds.toString()}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
+        // case regSendMeassageWithMention.test(message.text): {
+        //     const alertMessage = message.text
+        //         .replace(regName, '')
+        //         .split(regSendMeassageWithMention, 2)[1]
+        //         .trim();
+        //     bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
+        //         .then(res => {
+        //             const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
+        //             debugConsole(mentionIds);
+        //             bot.send(`сообщение для всех: ${alertMessage} ${mentionIds.toString()}`, message.peer_id).catch(
+        //                 function (e) {
+        //                     console.log(e);
+        //                 }
+        //             );
+        //         })
+        //         .catch(
+        //             function (e) {
+        //                 console.log(e);
+        //             }
+        //         );
+        //     break;
+        // }
         case regSong.test(message.text): {
             //get song name and artist from message
 
