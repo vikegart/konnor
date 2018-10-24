@@ -1,7 +1,6 @@
 console.log('all ok');
 
 const DEBUG_MODE = require('./konnor_config');
-const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
 
@@ -9,9 +8,7 @@ const weatherApi = require('./modules/weather/weatherApi');
 const constructors = require('./modules/weather/constructors');
 const dialogFlow = require('./modules/dialogFlow');
 const voiceToText = require('./modules/voiceToText');
-const shedule = require('./modules/shedule/getShedule');
 const calculator = require('./modules/calculator');
-const anekdot = require('./modules/anekdot');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
@@ -22,21 +19,13 @@ const TOKENS = require('./secret_tokens');
 
 const neuroWeather = require('./modules/neuroWeather');
 
-const regMentionAll = /позови всех/i;
 const regGiftAll = /поздравь всех/i;
 const regWho = /кто/i;
 const regStopCallingByName = /заткнись чувак/i;
 const regResumeCallingByName = /я скучал|я скучала/i;
 const regName = /коннор|connor|конор|андроид/i;
-const regWeather = /weather|погод[ауыен]|дождик|дождь/i;
-const regSong = /текст песни/i;
-const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
-const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
-const regChislOrZnam = /какая неделя|неделя какая/i;
-const regGetShedule = /расписание/i;
-const regAnekdot = /анекдот/i;
 
 
 let isReadyForReply = true;
@@ -53,31 +42,99 @@ const bot = new Bot({
 
 console.log('bot started');
 
-DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
-    let messageArr = ['', res.city, 'сегодня'];
-    let response = constructors.generateMessage('', res, messageArr);
-    bot.send(response, 141438738).catch(
-        function (e) {
-            console.log('send vk weather err ' + e);
-        }
-    );
-}).catch((e) => {
-    debugConsole(e);
-});
-
-!DEBUG_MODE && weatherApi.fetchWeatherForCity('саратов').then((res) => {
-    let messageArr = ['', res.city, 'сегодня'];
-    let response = constructors.generateMessage('', res, messageArr);
-    chatsForSend.forEach((chatId) => {
-        bot.send(response, chatId).catch(
-            function (e) {
-                console.log('send vk weather err ' + e);
+const dubugChatsId = require('./consts/debug_chatsID');
+DEBUG_MODE && dubugChatsId.forEach((chatId) => {
+    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+        response => {
+            debugConsole(response);
+            if (response.city) {
+                weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                    let messageArr = [];
+                    messageArr[1] = res.city;
+                    if (response.dateTime) {
+                        messageArr[2] = response.dateTime;
+                    }
+                    let weather = constructors.generateMessage('', res, messageArr);
+                    bot.send(weather, chatId).catch(
+                        function (e) {
+                            console.log('send vk weather err ' + e);
+                        }
+                    );
+                }).catch((e) => {
+                    debugConsole(e);
+                })
             }
-        );
-    })
-}).catch((e) => {
-    debugConsole(e);
-});
+            if (response.matchedWeather) {
+                bot.send(response.text, chatId).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                )
+            } else {
+                dialogFlow.askDialogFlow(message).then(
+                    response => {
+                        bot.send(response, chatId).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        )
+                    },
+                    error => console.log('promise dialogFlow error ' + error)
+                )
+            }
+        },
+        error => {
+            debugConsole(error);
+        }
+    )
+})
+
+!DEBUG_MODE && chatsForSend.forEach((chatId) => {
+    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+        response => {
+            debugConsole(response);
+            if (response.city) {
+                weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                    let messageArr = [];
+                    messageArr[1] = res.city;
+                    if (response.dateTime) {
+                        messageArr[2] = response.dateTime;
+                    }
+                    let weather = constructors.generateMessage('', res, messageArr);
+                    bot.send(weather, chatId).catch(
+                        function (e) {
+                            console.log('send vk weather err ' + e);
+                        }
+                    );
+                }).catch((e) => {
+                    debugConsole(e);
+                })
+            }
+            if (response.matchedWeather) {
+                bot.send(response.text, chatId).catch(
+                    function (e) {
+                        console.log(e);
+                    }
+                )
+            } else {
+                dialogFlow.askDialogFlow(message).then(
+                    response => {
+                        bot.send(response, chatId).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        )
+                    },
+                    error => console.log('promise dialogFlow error ' + error)
+                )
+            }
+        },
+        error => {
+            debugConsole(error);
+        }
+    )
+})
+
 
 bot.on('poll-error', error => {
     console.error('error occurred on a working with the Long Poll server ' +
@@ -191,6 +248,8 @@ Group.onMessageText((message) => {
     }
 })
 
+const skillList = require('./skills/skillList');
+
 bot.get(/./, message => {
     if (message.peer_id > 1000000000) { //message from conversation
         if (!regName.test(message.text)) { //if no name calling - no answeer
@@ -200,6 +259,17 @@ bot.get(/./, message => {
     bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
         .then(res => console.log(util.inspect(res)));
 
+    message.text.replace(regName, ''); //delete him name
+
+    for (let skillName in skillList){
+        const regExp = RegExp(skillName, 'i');
+        if (regExp.test(message.text)) {
+            console.log('matched: ' + skillName);
+            skillList[skillName](bot, message, TOKENS);
+            return;
+        }
+    }
+    
     switch (true) {
         case regWho.test(message.text) && isReadyForReply: {
             bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
@@ -214,26 +284,6 @@ bot.get(/./, message => {
                                 console.log(e);
                             }
                         );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
-        case regMentionAll.test(message.text): {
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    //const usersNamesOrIds = res.profiles.map(profile => profile.screen_name != '' ? profile.screen_name : profile.id );
-                    //console.log(util.inspect(usersNamesOrIds));
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    bot.send('я призываю всех ' + `${mentionIds.toString()}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
                 })
                 .catch(
                     function (e) {
@@ -296,116 +346,6 @@ bot.get(/./, message => {
                     console.log(e);
                 }
             );
-            break;
-        }
-        case regSendMeassageWithMention.test(message.text): {
-            const alertMessage = message.text
-                .replace(regName, '')
-                .split(regSendMeassageWithMention, 2)[1]
-                .trim();
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    bot.send(`сообщение для всех: ${alertMessage} ${mentionIds.toString()}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
-        case regSong.test(message.text): {
-            //get song name and artist from message
-
-            const lyricQuery = message.text.replace(regSong, '').replace(regName, '');
-            const lyricData = {
-                author: lyricQuery.split(regSongQuerySplitter, 2)[0].trim(),
-                songName: lyricQuery.split(regSongQuerySplitter, 2)[1].trim(),
-            };
-            lyric.get(lyricData.author, lyricData.songName, function (err, res) {
-                if (err) {
-                    console.log(err);
-                    //retry and swap parametrs
-                    lyric.get(lyricData.songName, lyricData.author, function (err, res) {
-                        if (err) {
-                            console.log(err);
-                            bot.send(`я не могу найти, может это ты в запросе ошибся? \n Ибо ответ из Киберлайф ${err}`, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            );
-                        }
-                        else {
-                            bot.send(`пришлось поменять местами автора и название, но я справился \n \n ${res}`, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            );
-                        }
-                    });
-
-                }
-                else {
-                    bot.send(`держи \n \n ${res}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
-                }
-            });
-            break;
-        }
-        case regChislOrZnam.test(message.text): {
-            let parity = 'сейчас ' + shedule.chislOrZnam();
-            if (/завтра/i.test(message.text)) {
-                let d = new Date();
-                d.setDate(d.getDate() + 1);
-                parity = 'завтра ' + shedule.chislOrZnam(d);
-            }
-            if (/следующая/i.test(message.text)) {
-                let d = new Date();
-                d.setDate(d.getDate() + 7);
-                parity = 'следующая неделя ' + shedule.chislOrZnam(d);
-            }
-            bot.send(parity, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
-        case regGetShedule.test(message.text): {
-            // ( + 6 ) % 7 'cause in Russia monday - first day of week
-            bot.send(`на сегодня: \n  ${shedule.getShedule((new Date().getDay() + 6) % 7)}`, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
-        case regAnekdot.test(message.text): {
-            anekdot(!/плохой/i.test(message.text)).then(
-                res => {
-                    bot.send(res, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    )
-                },
-                err => {
-                    bot.send(err, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    )
-                }
-            )
             break;
         }
         default: {

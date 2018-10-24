@@ -87,5 +87,3 @@ const giveMeAnekdot = (pickGood = true) => {
 };
 
 module.exports = giveMeAnekdot;
-// sendAnekdot(chatId);
-//sendAnekdot(chatId, false);
