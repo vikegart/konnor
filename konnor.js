@@ -12,7 +12,7 @@ const calculator = require('./modules/calculator');
 
 const chatsForSend = require('./consts/chatsID');
 const phrasesSticker = require('./consts/fallbackSticker');
-const commands = require('./consts/commands');
+
 
 //don't forget to add tokens in file and rename him
 const TOKENS = require('./secret_tokens');
@@ -268,27 +268,6 @@ bot.get(/./, message => {
     }
 
     switch (true) {
-        // case regWho.test(message.text) && isReadyForReply: {
-        //     bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-        //         .then(res => {
-        //             const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-        //             debugConsole(mentionIds);
-        //             const rand = Math.floor(Math.random() * mentionIds.length);
-        //             bot.send((mentionIds.length > 1
-        //                 ? `хмм... кажется это ${mentionIds[rand]}`
-        //                 : `ты :D , но лучше спроси меня об этом в беседе`), message.peer_id).catch(
-        //                     function (e) {
-        //                         console.log(e);
-        //                     }
-        //                 );
-        //         })
-        //         .catch(
-        //             function (e) {
-        //                 console.log(e);
-        //             }
-        //         );
-        //     break;
-        // }
         case regSendMessageToKoshatnik.test(message.text): {
             if (message.peer_id < 1000000000) {
                 const messageToKoshatnik = message.text
@@ -301,14 +280,14 @@ bot.get(/./, message => {
             }
             break;
         }
-        case regWhatUCan.test(message.text): {
-            bot.send(commands, message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
+        // case regWhatUCan.test(message.text): {
+        //     bot.send(commands, message.peer_id).catch(
+        //         function (e) {
+        //             console.log(e);
+        //         }
+        //     );
+        //     break;
+        // }
         default: {
             if (!isReadyForReply) {
                 break;
