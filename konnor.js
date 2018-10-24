@@ -19,9 +19,7 @@ const TOKENS = require('./secret_tokens');
 
 const neuroWeather = require('./modules/neuroWeather');
 
-const regWho = /кто/i;
 const regName = /коннор|connor|конор|андроид/i;
-const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMessageToKoshatnik = /напиши/i;
 
 
@@ -268,26 +266,7 @@ bot.get(/./, message => {
     }
 
     switch (true) {
-        case regSendMessageToKoshatnik.test(message.text): {
-            if (message.peer_id < 1000000000) {
-                const messageToKoshatnik = message.text
-                    .split(regSendMessageToKoshatnik, 2)[1].trim();
-                bot.send(messageToKoshatnik, 2000000001).catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            }
-            break;
-        }
-        // case regWhatUCan.test(message.text): {
-        //     bot.send(commands, message.peer_id).catch(
-        //         function (e) {
-        //             console.log(e);
-        //         }
-        //     );
-        //     break;
-        // }
+
         default: {
             if (!isReadyForReply) {
                 break;
