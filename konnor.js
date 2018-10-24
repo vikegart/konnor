@@ -1,7 +1,6 @@
 console.log('all ok');
 
 const DEBUG_MODE = require('./konnor_config');
-const lyric = require("lyric-get");
 const util = require('util');
 const { Bot } = require('node-vk-bot');
 
@@ -25,10 +24,7 @@ const regWho = /кто/i;
 const regStopCallingByName = /заткнись чувак/i;
 const regResumeCallingByName = /я скучал|я скучала/i;
 const regName = /коннор|connor|конор|андроид/i;
-const regSong = /текст песни/i;
-const regSongQuerySplitter = /\,|🎵|🎶|by/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
-const regSendMeassageWithMention = /об[ъь]явление/i;
 const regSendMessageToKoshatnik = /напиши/i;
 
 
@@ -272,8 +268,8 @@ bot.get(/./, message => {
             skillList[skillName](bot, message, TOKENS);
             return;
         }
-    }    
-
+    }
+    
     switch (true) {
         case regWho.test(message.text) && isReadyForReply: {
             bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
@@ -350,69 +346,6 @@ bot.get(/./, message => {
                     console.log(e);
                 }
             );
-            break;
-        }
-        // case regSendMeassageWithMention.test(message.text): {
-        //     const alertMessage = message.text
-        //         .replace(regName, '')
-        //         .split(regSendMeassageWithMention, 2)[1]
-        //         .trim();
-        //     bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-        //         .then(res => {
-        //             const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-        //             debugConsole(mentionIds);
-        //             bot.send(`сообщение для всех: ${alertMessage} ${mentionIds.toString()}`, message.peer_id).catch(
-        //                 function (e) {
-        //                     console.log(e);
-        //                 }
-        //             );
-        //         })
-        //         .catch(
-        //             function (e) {
-        //                 console.log(e);
-        //             }
-        //         );
-        //     break;
-        // }
-        case regSong.test(message.text): {
-            //get song name and artist from message
-
-            const lyricQuery = message.text.replace(regSong, '').replace(regName, '');
-            const lyricData = {
-                author: lyricQuery.split(regSongQuerySplitter, 2)[0].trim(),
-                songName: lyricQuery.split(regSongQuerySplitter, 2)[1].trim(),
-            };
-            lyric.get(lyricData.author, lyricData.songName, function (err, res) {
-                if (err) {
-                    console.log(err);
-                    //retry and swap parametrs
-                    lyric.get(lyricData.songName, lyricData.author, function (err, res) {
-                        if (err) {
-                            console.log(err);
-                            bot.send(`я не могу найти, может это ты в запросе ошибся? \n Ибо ответ из Киберлайф ${err}`, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            );
-                        }
-                        else {
-                            bot.send(`пришлось поменять местами автора и название, но я справился \n \n ${res}`, message.peer_id).catch(
-                                function (e) {
-                                    console.log(e);
-                                }
-                            );
-                        }
-                    });
-
-                }
-                else {
-                    bot.send(`держи \n \n ${res}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
-                }
-            });
             break;
         }
         default: {
