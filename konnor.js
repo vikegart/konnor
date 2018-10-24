@@ -19,10 +19,7 @@ const TOKENS = require('./secret_tokens');
 
 const neuroWeather = require('./modules/neuroWeather');
 
-const regGiftAll = /поздравь всех/i;
 const regWho = /кто/i;
-const regStopCallingByName = /заткнись чувак/i;
-const regResumeCallingByName = /я скучал|я скучала/i;
 const regName = /коннор|connor|конор|андроид/i;
 const regWhatUCan = /что ты умеешь|можешь|список команд|команды|твои способности/i;
 const regSendMessageToKoshatnik = /напиши/i;
@@ -269,56 +266,29 @@ bot.get(/./, message => {
             return;
         }
     }
-    
+
     switch (true) {
-        case regWho.test(message.text) && isReadyForReply: {
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    const rand = Math.floor(Math.random() * mentionIds.length);
-                    bot.send((mentionIds.length > 1
-                        ? `хмм... кажется это ${mentionIds[rand]}`
-                        : `ты :D , но лучше спроси меня об этом в беседе`), message.peer_id).catch(
-                            function (e) {
-                                console.log(e);
-                            }
-                        );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
-        case regGiftAll.test(message.text) && isReadyForReply: {
-            bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
-                .then(res => {
-                    const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
-                    debugConsole(mentionIds);
-                    bot.send('всех с праздником :D ' + `${mentionIds.toString()}`, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    );
-                })
-                .catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                );
-            break;
-        }
-        case regStopCallingByName.test(message.text) && isReadyForReply: {
-            isReadyForReply = false;
-            bot.send('окей, я пойду к Хенку с:', message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
-            break;
-        }
+        // case regWho.test(message.text) && isReadyForReply: {
+        //     bot.api('messages.getConversationMembers', { peer_id: message.peer_id, group_id: TOKENS.groupId })
+        //         .then(res => {
+        //             const mentionIds = res.profiles.map(profile => `@id${profile.id}`);
+        //             debugConsole(mentionIds);
+        //             const rand = Math.floor(Math.random() * mentionIds.length);
+        //             bot.send((mentionIds.length > 1
+        //                 ? `хмм... кажется это ${mentionIds[rand]}`
+        //                 : `ты :D , но лучше спроси меня об этом в беседе`), message.peer_id).catch(
+        //                     function (e) {
+        //                         console.log(e);
+        //                     }
+        //                 );
+        //         })
+        //         .catch(
+        //             function (e) {
+        //                 console.log(e);
+        //             }
+        //         );
+        //     break;
+        // }
         case regSendMessageToKoshatnik.test(message.text): {
             if (message.peer_id < 1000000000) {
                 const messageToKoshatnik = message.text
@@ -329,15 +299,6 @@ bot.get(/./, message => {
                     }
                 );
             }
-            break;
-        }
-        case regResumeCallingByName.test(message.text): {
-            isReadyForReply = true;
-            bot.send('еее, здорова чуваки с: ', message.peer_id).catch(
-                function (e) {
-                    console.log(e);
-                }
-            );
             break;
         }
         case regWhatUCan.test(message.text): {
