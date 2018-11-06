@@ -1,12 +1,9 @@
 const chats = [
     //private messages
-    141438738, //me
-    108070501, // olya
-    452673320, //aru
-
-    //conversation
-    2000000001, //koshatnik
-    
+    {id: 141438738, city: 'Саратов'}, //me
+    {id: 108070501, city: 'Саратов'}, //olya
+    {id: 452673320, city: 'Астрахань'}, //aru
+    {id: 2000000001, city: 'Саратов'}, //koshatnik
 
 ];
 
