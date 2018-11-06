@@ -35,9 +35,16 @@ const askNeuroWeater = (query, userId) => {
                     dateTime;
                 }
                 if (result.allRequiredParamsPresent) {
+                    let city;
+                    if (result.parameters.fields.address.stringValue){
+                        city = result.parameters.fields.address.stringValue;
+                    } else {
+                        city = result.parameters.fields.address.structValue.fields.city.stringValue;
+                    }
+                    console.log(result.parameters.fields.address.stringValue);
                     return resolve({
                         text: result.fulfillmentText,
-                        city: result.parameters.fields.address.structValue.fields.city.stringValue,
+                        city: city,
                         dateTime: dateTime,
                         matchedWeather: result.intent,
                     })

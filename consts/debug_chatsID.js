@@ -1,11 +1,6 @@
 const chats = [
-    //private messages
-    141438738, //me
-
-    //conversation
-    2000000003, //Test Connor
-    
-
+    {id: 141438738, city: 'Саратов'}, //me
+    {id: 2000000003, city: 'Астрахань'},
 ];
 
 module.exports = chats;

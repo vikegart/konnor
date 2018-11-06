@@ -20,10 +20,6 @@ const TOKENS = require('./secret_tokens');
 const neuroWeather = require('./modules/neuroWeather');
 
 const regName = /коннор|connor|конор|андроид/i;
-const regSendMessageToKoshatnik = /напиши/i;
-
-
-let isReadyForReply = true;
 
 
 const debugConsole = (variable, depth) => {
@@ -38,8 +34,8 @@ const bot = new Bot({
 console.log('bot started');
 
 const dubugChatsId = require('./consts/debug_chatsID');
-DEBUG_MODE && dubugChatsId.forEach((chatId) => {
-    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+DEBUG_MODE && dubugChatsId.forEach((chat) => {
+    neuroWeather(`Какая погода сегодня в ${chat.city}?`, chat.id).then(
         response => {
             debugConsole(response);
             if (response.city) {
@@ -49,8 +45,8 @@ DEBUG_MODE && dubugChatsId.forEach((chatId) => {
                     if (response.dateTime) {
                         messageArr[2] = response.dateTime;
                     }
-                    let weather = constructors.generateMessage('', res, messageArr);
-                    bot.send(weather, chatId).catch(
+                    const weather = constructors.generateMessage('', res, messageArr);
+                    bot.send(weather, chat.id).catch(
                         function (e) {
                             console.log('send vk weather err ' + e);
                         }
@@ -58,24 +54,6 @@ DEBUG_MODE && dubugChatsId.forEach((chatId) => {
                 }).catch((e) => {
                     debugConsole(e);
                 })
-            }
-            if (response.matchedWeather) {
-                bot.send(response.text, chatId).catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                )
-            } else {
-                dialogFlow.askDialogFlow(message).then(
-                    response => {
-                        bot.send(response, chatId).catch(
-                            function (e) {
-                                console.log(e);
-                            }
-                        )
-                    },
-                    error => console.log('promise dialogFlow error ' + error)
-                )
             }
         },
         error => {
@@ -84,8 +62,8 @@ DEBUG_MODE && dubugChatsId.forEach((chatId) => {
     )
 })
 
-!DEBUG_MODE && chatsForSend.forEach((chatId) => {
-    neuroWeather('Какая погода сегодня в Саратове?', chatId).then(
+!DEBUG_MODE && chatsForSend.forEach((chat) => {
+    neuroWeather(`Какая погода сегодня в ${chat.city}?`, chat.id).then(
         response => {
             debugConsole(response);
             if (response.city) {
@@ -96,7 +74,7 @@ DEBUG_MODE && dubugChatsId.forEach((chatId) => {
                         messageArr[2] = response.dateTime;
                     }
                     let weather = constructors.generateMessage('', res, messageArr);
-                    bot.send(weather, chatId).catch(
+                    bot.send(weather, chat.id).catch(
                         function (e) {
                             console.log('send vk weather err ' + e);
                         }
@@ -104,24 +82,6 @@ DEBUG_MODE && dubugChatsId.forEach((chatId) => {
                 }).catch((e) => {
                     debugConsole(e);
                 })
-            }
-            if (response.matchedWeather) {
-                bot.send(response.text, chatId).catch(
-                    function (e) {
-                        console.log(e);
-                    }
-                )
-            } else {
-                dialogFlow.askDialogFlow(message).then(
-                    response => {
-                        bot.send(response, chatId).catch(
-                            function (e) {
-                                console.log(e);
-                            }
-                        )
-                    },
-                    error => console.log('promise dialogFlow error ' + error)
-                )
             }
         },
         error => {
@@ -216,7 +176,7 @@ Group.onMessageText((message) => {
     if (message.body.length > 200 || !(/я точно илья/i.test(message.body))) {
         message.addText('В сообщении должно быть не больше 200 символов или илья').send();
     } else {
-        message.setTyping();    
+        message.setTyping();
 
         VK.Utils.getBuffer('https://tts.voicetech.yandex.net/generate', {
             text: message.body.replace(/я точно илья/i, ''),
@@ -256,7 +216,7 @@ bot.get(/./, message => {
 
     message.text.replace(regName, ''); //delete him name
 
-    for (let skillName in skillList){
+    for (let skillName in skillList) {
         const regExp = RegExp(skillName, 'i');
         if (regExp.test(message.text)) {
             console.log('matched: ' + skillName);
@@ -265,70 +225,63 @@ bot.get(/./, message => {
         }
     }
 
-    switch (true) {
 
-        default: {
-            if (!isReadyForReply) {
-                break;
-            }
-            cleanText = message.text.replace(regName, '');
-            calculator(cleanText).then(
+    calculator(message.text).then(
+        response => {
+            bot.send(response, message.peer_id).catch(
+                function (e) {
+                    console.log(e);
+                }
+            )
+        },
+        error => {
+            console.log('calc err: ' + error);
+            neuroWeather(message.text, message.peer_id).then(
                 response => {
-                    bot.send(response, message.peer_id).catch(
-                        function (e) {
-                            console.log(e);
-                        }
-                    )
-                },
-                error => {
-                    console.log('calc err: ' + error);
-                    neuroWeather(message.text, message.peer_id).then(
-                        response => {
-                            debugConsole(response);
-                            if (response.city) {
-                                weatherApi.fetchWeatherForCity(response.city).then((res) => {
-                                    let messageArr = [];
-                                    messageArr[1] = res.city;
-                                    if (response.dateTime) {
-                                        messageArr[2] = response.dateTime;
-                                    }
-                                    let weather = constructors.generateMessage('', res, messageArr);
-                                    bot.send(weather, message.peer_id).catch(
-                                        function (e) {
-                                            console.log('send vk weather err ' + e);
-                                        }
-                                    );
-                                }).catch((e) => {
-                                    debugConsole(e);
-                                })
+                    debugConsole(response);
+                    if (response.city) {
+                        weatherApi.fetchWeatherForCity(response.city).then((res) => {
+                            let messageArr = [];
+                            messageArr[1] = res.city;
+                            if (response.dateTime) {
+                                messageArr[2] = response.dateTime;
                             }
-                            if (response.matchedWeather) {
-                                bot.send(response.text, message.peer_id).catch(
+                            let weather = constructors.generateMessage('', res, messageArr);
+                            bot.send(weather, message.peer_id).catch(
+                                function (e) {
+                                    debugConsole(e);
+                                    console.log('send vk weather err ' + e);
+                                }
+                            );
+                        }).catch((e) => {
+                            debugConsole(e);
+                        })
+                    }
+                    if (response.matchedWeather) {
+                        bot.send(response.text, message.peer_id).catch(
+                            function (e) {
+                                console.log(e);
+                            }
+                        )
+                    } else {
+                        dialogFlow.askDialogFlow(message).then(
+                            response => {
+                                bot.send(response, message.peer_id).catch(
                                     function (e) {
                                         console.log(e);
                                     }
                                 )
-                            } else {
-                                dialogFlow.askDialogFlow(message).then(
-                                    response => {
-                                        bot.send(response, message.peer_id).catch(
-                                            function (e) {
-                                                console.log(e);
-                                            }
-                                        )
-                                    },
-                                    error => console.log('promise dialogFlow error ' + error)
-                                )
-                            }
-                        },
-                        error => {
-                            debugConsole(error);
-                        }
-                    )
-
-
+                            },
+                            error => console.log('promise dialogFlow error ' + error)
+                        )
+                    }
+                },
+                error => {
+                    debugConsole(error);
                 }
             )
+
+
         }
-    }
+    )
 })
