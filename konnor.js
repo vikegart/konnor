@@ -176,7 +176,7 @@ bot.get(/./, message => {
     bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
         .then(res => console.log(util.inspect(res)));
 
-    message.text.replace(regName, ''); //delete him name
+    message.text = message.text.replace(regName, ''); //delete him name
 
     for (let skillName in skillList) {
         const regExp = RegExp(skillName, 'i');
