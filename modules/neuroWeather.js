@@ -6,7 +6,6 @@ const dialogflow = require('dialogflow');
 
 
 const askNeuroWeater = (query, userId) => {
-    console.log(query, userId);
     const sessionId = userId.toString();
     const sessionClient = new dialogflow.SessionsClient({ keyFilename: './gweather.json' });
     const sessionPath = sessionClient.sessionPath(projectId, sessionId);
@@ -41,7 +40,6 @@ const askNeuroWeater = (query, userId) => {
                     } else {
                         city = result.parameters.fields.address.structValue.fields.city.stringValue;
                     }
-                    console.log(result.parameters.fields.address.stringValue);
                     return resolve({
                         text: result.fulfillmentText,
                         city: city,

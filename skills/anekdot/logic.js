@@ -34,7 +34,7 @@ const getAnekdot = (pickGood = true) => {
                 }
                 
                 var $ = cheerio.load(res.body, { decodeEntities: false });
-                const items = $('.leftcolumn > .topicbox[id]');
+                const items = $('.content .topicbox[id]');
                 
                 let anekdotsAll = [];
                 
@@ -51,12 +51,17 @@ const getAnekdot = (pickGood = true) => {
                 });
                 
                 // sort by rating
-                anekdotsAll = anekdotsAll.sort((x, y) => y.rating - x.rating);
-                
-                const midRating = anekdotsAll[Math.floor(anekdotsAll.length / 2)].rating;
-                
-                anekdots = anekdots.concat(anekdotsAll.filter(item => item.rating >= midRating));
-                anekdotsBad = anekdotsBad.concat(anekdotsAll.filter(item => item.rating < midRating));
+                try {
+
+                    anekdotsAll = anekdotsAll.sort((x, y) => y.rating - x.rating);
+                    
+                    const midRating = anekdotsAll[Math.floor(anekdotsAll.length / 2)].rating;
+                    
+                    anekdots = anekdots.concat(anekdotsAll.filter(item => item.rating >= midRating));
+                    anekdotsBad = anekdotsBad.concat(anekdotsAll.filter(item => item.rating < midRating));
+                } catch (e){
+                    reject(`anekdot skill err: ${e}`);
+                }
                 
                 if (!anekdot) {
                     anekdot = pick();

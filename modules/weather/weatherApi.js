@@ -7,11 +7,9 @@ module.exports = {
         let city;
         const weatherRequest = (lat, lng) => {
             return new Promise((resolve, reject) => {
-                console.log(lat);
                 let requestUrl = `${DARK_SKY_WEATHER_URL}${lat},${lng}?&units=si&extend=hourly&lang=ru`;
                 return axios.get(requestUrl).then((response) => {
                     response.data.city = city;
-                    console.log(response.data);
                     return resolve(response.data);
                 }).catch((e) => {
                     console.log(e);
