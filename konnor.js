@@ -28,7 +28,7 @@ const debugConsole = (variable, depth) => {
 
 const bot = new Bot({
     token: TOKENS.vkGroupFullRight,
-    group_id: TOKENS.groupId
+    group_id: TOKENS.groupId,
 }).start()
 
 console.log('bot started');

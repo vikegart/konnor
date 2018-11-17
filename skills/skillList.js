@@ -7,6 +7,7 @@ const skillList = {
     [require('./who/index').callName] : require('./who/index').action,
     [require('./whatUCan/index').callName] : require('./whatUCan/index').action,
     [require('./sendMessageToChat/index').callName] : require('./sendMessageToChat/index').action,
+    [require('./askForYes/index').callName] : require('./askForYes/index').action,
 }
 
 module.exports = skillList;
