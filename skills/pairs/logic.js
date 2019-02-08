@@ -3,7 +3,7 @@ const chislOrZnamen = (date) => {
     if (date) {
         now = date;
     }
-    //изначально считаем что сейчас знаменатель
+    //изначально считаем что сейчас числитель
     //true - числитель
     //false - знаменатель
     
@@ -38,14 +38,14 @@ const chislOrZnamen = (date) => {
                 }
             }
             else if (countFullWeeksAfterNY % 2 == 0) {
-                return 'числитель'
+                return 'знаменатель'
             }
         }
         else if (currentMonth > 4) {
             console.log('сейчас лето, ты чего');
         }
     }
-    return 'знаменатель'
+    return 'числитель'
 }
 
 module.exports = chislOrZnamen;
