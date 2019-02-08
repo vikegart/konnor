@@ -1,7 +1,7 @@
 const { Keyboard, KeyboardColor } = require('node-vk-bot');
 const TOKENS = require('../../secret_tokens');
 
-const giveMeAndekdot = {
+const askForYes = {
     callName: 'действуй',
     action: (bot, message) => {
         console.log('skill called');
@@ -24,4 +24,4 @@ const giveMeAndekdot = {
     }
 }
 
-module.exports = giveMeAndekdot;
+module.exports = askForYes;
