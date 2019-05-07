@@ -110,6 +110,11 @@ bot.on('sticker', message => {
 
 bot.on('voice', message => {
     console.log('get voice ' + util.inspect(message));
+
+    //UPD 05.07.2019
+    //I have some issues with Yandex API and temporally disabled this function
+    return;
+
     const options = { forward_messages: message.id.toString() };
     bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
         .then(res => console.log(util.inspect(res)));
@@ -129,40 +134,6 @@ bot.on('voice', message => {
             );
         }
     )
-})
-
-bot.on('update', update => {
-    //check if audio message as forward
-    if (update.type == 'message_new') {
-        const message = update.object;
-        if (message.fwd_messages.length != 0) {
-            for (let i = 0; i < message.fwd_messages.length; i++) {
-                let fwd_message = message.fwd_messages[i];
-                if (voiceToText.hasVoiceAttached(fwd_message)) {
-                    bot.api('messages.setActivity', { type: 'typing', peer_id: message.peer_id, group_id: TOKENS.groupId })
-                        .then(res => console.log(util.inspect(res)));
-                    voiceToText.voiceMessageToText(fwd_message).then(
-                        response => {
-                            bot.send(response, message.peer_id, { forward_messages: message.id.toString() }).catch(
-                                function (e) {
-                                    console.log('send voice to text to chat vk err ' + e);
-                                }
-                            );
-                        },
-                        error => {
-                            bot.send(error, message.peer_id, { forward_messages: message.id.toString() }).catch(
-                                function (e) {
-                                    console.log('send voice to text to chat vk err ' + e);
-                                }
-                            );
-                        }
-                    )
-                }
-            }
-        }
-
-    }
-
 })
 
 const skillList = require('./skills/skillList');
